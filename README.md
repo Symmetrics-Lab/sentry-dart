@@ -2,45 +2,190 @@
   <a href="https://sentry.io" target="_blank" align="center">
     <img src="https://sentry-brand.storage.googleapis.com/sentry-logo-black.png" width="280">
   </a>
-    <a href="https://flutter.dev/docs/development/packages-and-plugins/favorites" target="_blank" align="right">
-    <img src="https://github.com/getsentry/sentry-dart/raw/main/.github/flutter_favorite.svg" width="100">
-  </a>
   <br />
 </p>
 
-_Bad software is everywhere, and we're tired of it. Sentry is on a mission to help developers write better software faster, so we can get back to enjoying technology. If you want to join us [<kbd>**Check out our open positions**</kbd>](https://sentry.io/careers/)_
-
-Sentry SDK for Dart and Flutter
+Sentry SDK for Dart
 ===========
-
-[![codecov](https://codecov.io/gh/getsentry/sentry-dart/branch/main/graph/badge.svg?token=J0QX0LPmwy)](https://codecov.io/gh/getsentry/sentry-dart)
 
 | package | build | pub | likes | popularity | pub points |
 | ------- | ------- | ------- | ------- | ------- | ------- |
 | sentry | [![build](https://github.com/getsentry/sentry-dart/workflows/sentry-dart/badge.svg?branch=main)](https://github.com/getsentry/sentry-dart/actions?query=workflow%3Asentry-dart) | [![pub package](https://img.shields.io/pub/v/sentry.svg)](https://pub.dev/packages/sentry) | [![likes](https://badges.bar/sentry/likes)](https://pub.dev/packages/sentry/score) | [![popularity](https://badges.bar/sentry/popularity)](https://pub.dev/packages/sentry/score) | [![pub points](https://badges.bar/sentry/pub%20points)](https://pub.dev/packages/sentry/score)
-| sentry_flutter | [![build](https://github.com/getsentry/sentry-dart/workflows/sentry-flutter/badge.svg?branch=main)](https://github.com/getsentry/sentry-dart/actions?query=workflow%3Asentry-flutter) | [![pub package](https://img.shields.io/pub/v/sentry_flutter.svg)](https://pub.dev/packages/sentry_flutter) | [![likes](https://badges.bar/sentry_flutter/likes)](https://pub.dev/packages/sentry_flutter/score) | [![popularity](https://badges.bar/sentry_flutter/popularity)](https://pub.dev/packages/sentry_flutter/score) | [![pub points](https://badges.bar/sentry_flutter/pub%20points)](https://pub.dev/packages/sentry_flutter/score)
-| sentry_logging | [![build](https://github.com/getsentry/sentry-dart/workflows/sentry-logging/badge.svg?branch=main)](https://github.com/getsentry/sentry-dart/actions?query=workflow%3Alogging) | [![pub package](https://img.shields.io/pub/v/sentry_logging.svg)](https://pub.dev/packages/sentry_logging) | [![likes](https://badges.bar/sentry_logging/likes)](https://pub.dev/packages/sentry_logging/score) | [![popularity](https://badges.bar/sentry_logging/popularity)](https://pub.dev/packages/sentry_logging/score) | [![pub points](https://badges.bar/sentry_logging/pub%20points)](https://pub.dev/packages/sentry_logging/score)
-| sentry_dio | [![build](https://github.com/getsentry/sentry-dart/workflows/sentry-dio/badge.svg?branch=main)](https://github.com/getsentry/sentry-dart/actions?query=workflow%3Asentry-dio) | [![pub package](https://img.shields.io/pub/v/sentry_dio.svg)](https://pub.dev/packages/sentry_dio) | [![likes](https://badges.bar/sentry_dio/likes)](https://pub.dev/packages/sentry_dio/score) | [![popularity](https://badges.bar/sentry_dio/popularity)](https://pub.dev/packages/sentry_dio/score) | [![pub points](https://badges.bar/sentry_dio/pub%20points)](https://pub.dev/packages/sentry_dio/score)
 
-##### Usage
+Pure Dart SDK used by any Dart application like AngularDart, CLI and Server.
 
-For detailed usage, check out the inner [dart](https://github.com/getsentry/sentry-dart/tree/main/dart), [flutter](https://github.com/getsentry/sentry-dart/tree/main/flutter), [logging](https://github.com/getsentry/sentry-dart/tree/main/logging) and [dio](https://github.com/getsentry/sentry-dart/tree/main/dio) `README's` or our `Resources` section below.
+#### Flutter
 
-#### Blog posts
+For Flutter applications there's [`sentry_flutter`](https://pub.dev/packages/sentry_flutter) which builds on top of this package.
+That will give you native crash support (for Android and iOS), [release health](https://docs.sentry.io/product/releases/health/), offline caching and more.
 
-[Sentry's New Mobile App for Managing Releases](https://blog.sentry.io/2021/08/03/fluttering-our-mobile-wings).
+#### Usage
 
-[With Flutter and Sentry, You Can Put All Your Eggs in One Repo](https://blog.sentry.io/2021/03/03/with-flutter-and-sentry-you-can-put-all-your-eggs-in-one-repo).
+- Sign up for a Sentry.io account and get a DSN at http://sentry.io.
 
-[A Sanity Listicle for Mobile Developers](https://blog.sentry.io/2021/03/30/a-sanity-listicle-for-mobile-developers/).
+- Follow the installing instructions on [pub.dev](https://pub.dev/packages/sentry/install).
 
-[Supporting Native Android Libraries Loaded From APKs](https://blog.sentry.io/2021/05/13/supporting-native-android-libraries-loaded-from-apks).
+- Initialize the Sentry SDK using the DSN issued by Sentry.io:
+
+```dart
+import 'package:sentry/sentry.dart';
+
+Future<void> main() async {
+  await Sentry.init(
+    (options) {
+      options.dsn = 'https://example@sentry.io/example';
+    },
+    appRunner: initApp, // Init your App.
+  );
+}
+
+void initApp() {
+  // your app code
+}
+```
+
+Or, if you want to run your app in your own error zone [runZonedGuarded]:  
+
+```dart
+import 'dart:async';
+
+import 'package:sentry/sentry.dart';
+
+Future<void> main() async {
+  runZonedGuarded(() async {
+    await Sentry.init(
+      (options) {
+        options.dsn = 'https://example@sentry.io/example';
+      },
+    );
+
+    // Init your App.
+    initApp();
+  }, (exception, stackTrace) async {
+    await Sentry.captureException(exception, stackTrace: stackTrace);
+  });
+}
+
+void initApp() {
+  // your app code
+}
+```
+
+##### Breadcrumbs for HTTP Requests
+
+The `SentryHttpClient` can be used as a standalone client like this:
+```dart
+import 'package:sentry/sentry.dart';
+
+var client = SentryHttpClient();
+try {
+ var uriResponse = await client.post('https://example.com/whatsit/create',
+     body: {'name': 'doodle', 'color': 'blue'});
+ print(await client.get(uriResponse.bodyFields['uri']));
+} finally {
+ client.close();
+}
+```
+
+The `SentryHttpClient` can also be used as a wrapper for your own
+HTTP [Client](https://pub.dev/documentation/http/latest/http/Client-class.html):
+```dart
+import 'package:sentry/sentry.dart';
+import 'package:http/http.dart' as http;
+
+final myClient = http.Client();
+
+var client = SentryHttpClient(client: myClient);
+try {
+var uriResponse = await client.post('https://example.com/whatsit/create',
+     body: {'name': 'doodle', 'color': 'blue'});
+ print(await client.get(uriResponse.bodyFields['uri']));
+} finally {
+ client.close();
+}
+```
+
+##### Reporting Bad HTTP Requests as Errors
+
+The `SentryHttpClient` can also catch exceptions that may occur during requests
+such as [`SocketException`](https://api.dart.dev/stable/2.13.4/dart-io/SocketException-class.html)s.
+This is currently an opt-in feature. The following example shows how to enable it.
+
+```dart
+import 'package:sentry/sentry.dart';
+
+var client = SentryHttpClient(captureFailedRequests: true);
+try {
+var uriResponse = await client.post('https://example.com/whatsit/create',
+     body: {'name': 'doodle', 'color': 'blue'});
+ print(await client.get(uriResponse.bodyFields['uri']));
+} finally {
+ client.close();
+}
+```
+
+Furthermore you can track HTTP requests which are considered bad by you.
+The following example shows how to do it. It captures exceptions for 
+each request with a status code range from 400 to 404 and also for 500.
+
+```dart
+import 'package:sentry/sentry.dart';
+
+var client = SentryHttpClient(
+  failedRequestStatusCodes: [
+    SentryStatusCode.range(400, 404),
+    SentryStatusCode(500),
+  ],
+);
+
+try {
+var uriResponse = await client.post('https://example.com/whatsit/create',
+     body: {'name': 'doodle', 'color': 'blue'});
+ print(await client.get(uriResponse.bodyFields['uri']));
+} finally {
+ client.close();
+}
+```
+
+##### Performance Monitoring for HTTP Requests
+
+The `SentryHttpClient` starts a span out of the active span bound to the scope for each HTTP Request. This is currently an opt-in feature. The following example shows how to enable it.
+
+```dart
+import 'package:sentry/sentry.dart';
+
+final transaction = Sentry.startTransaction(
+  'webrequest',
+  'request',
+  bindToScope: true,
+);
+
+var client = SentryHttpClient(networkTracing: true);
+try {
+var uriResponse = await client.post('https://example.com/whatsit/create',
+     body: {'name': 'doodle', 'color': 'blue'});
+ print(await client.get(uriResponse.bodyFields['uri']));
+} finally {
+ client.close();
+}
+
+await transaction.finish(status: SpanStatus.ok());
+```
+
+Read more about [Automatic Instrumentation](https://docs.sentry.io/platforms/dart/performance/instrumentation/automatic-instrumentation/).
+
+##### Tips for catching errors
+
+- Use a `try/catch` block.
+- Use a `catchError` block for `Futures`, examples on [dart.dev](https://dart.dev/guides/libraries/futures-error-handling).
+- The SDK already runs your `callback` on an error handler, e.g. using [runZonedGuarded](https://api.flutter.dev/flutter/dart-async/runZonedGuarded.html), events caught by the `runZonedGuarded` are captured automatically.
+- [Current Isolate errors](https://api.flutter.dev/flutter/dart-isolate/Isolate/addErrorListener.html) which is the equivalent of a main or UI thread, are captured automatically (Only for non-Web Apps).
+- For your own `Isolates`, add an [Error Listener](https://api.flutter.dev/flutter/dart-isolate/Isolate/addErrorListener.html) and call `Sentry.captureException`.
 
 #### Resources
 
-* [![Flutter docs](https://img.shields.io/badge/documentation-sentry.io-green.svg?label=flutter%20docs)](https://docs.sentry.io/platforms/flutter/)
-* [![Dart docs](https://img.shields.io/badge/documentation-sentry.io-green.svg?label=dart%20docs)](https://docs.sentry.io/platforms/dart/)
+* [![Documentation](https://img.shields.io/badge/documentation-sentry.io-green.svg)](https://docs.sentry.io/platforms/dart/)
 * [![Forum](https://img.shields.io/badge/forum-sentry-green.svg)](https://forum.sentry.io/c/sdks)
-* [![Discord Chat](https://img.shields.io/discord/621778831602221064?logo=discord&logoColor=ffffff&color=7389D8)](https://discord.gg/PXa5Apfe7K)  
+* [![Discord](https://img.shields.io/discord/621778831602221064)](https://discord.gg/Ww9hbqr)
 * [![Stack Overflow](https://img.shields.io/badge/stack%20overflow-sentry-green.svg)](https://stackoverflow.com/questions/tagged/sentry)
 * [![Twitter Follow](https://img.shields.io/twitter/follow/getsentry?label=getsentry&style=social)](https://twitter.com/intent/follow?screen_name=getsentry)
